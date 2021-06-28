@@ -13,8 +13,8 @@ const PopupField = ({
       placeholder={placeholder}
       name={name}
       required
-      minlength={minLength}
-      maxlength={maxLength}
+      minLength={minLength}
+      maxLength={maxLength}
       type={type}
     />
     <span id={`${name}-error`} className="popup__span"></span>
