@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 
 import { api } from "../utils/api";
-import DestinationCard from "./DestinationCard";
+import Card from "./Card";
 import PopupField from "./PopupField";
 import PopupWithForm from "./PopupWithForm";
-import PopupWithImage from "./PopupWithImage";
+import ImagePopup from "./ImagePopup";
 import UserAvatar from "./UserAvatar";
 
 const Main = () => {
@@ -82,7 +82,7 @@ const Main = () => {
         <section className="destinations">
           <ul className="destinations__list">
             {cards.map((card, index) => (
-              <DestinationCard
+              <Card
                 {...card}
                 key={index}
                 isOwner={card.owner._id === userProfile._id}
@@ -196,7 +196,7 @@ const Main = () => {
           type="url"
         />
       </PopupWithForm>
-      <PopupWithImage
+      <ImagePopup
         isOpen={Boolean(pictureModalData)}
         onClose={() => setPictureModalData(null)}
         name={pictureModalData?.name}

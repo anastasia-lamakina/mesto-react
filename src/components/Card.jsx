@@ -10,7 +10,7 @@ const LikeButton = ({ isLiked, onClick }) => (
   />
 );
 
-const DestinationCard = ({
+const Card = ({
   name,
   link,
   likes,
@@ -48,4 +48,4 @@ const DestinationCard = ({
   </li>
 );
 
-export default DestinationCard;
+export default Card;
