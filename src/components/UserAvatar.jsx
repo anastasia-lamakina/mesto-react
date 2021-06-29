@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import ProfileEditIcon from "../images/profile-edit-icon.svg";
-import ProfilePicture from "../images/profile-picture.jpg";
+import profileEditIcon from "../images/profile-edit-icon.svg";
+import profilePicture from "../images/profile-picture.jpg";
 
 const UserAvatar = ({ avatar }) => {
   const [isEditIconShown, setIsEditIconShown] = useState(false);
@@ -10,13 +10,13 @@ const UserAvatar = ({ avatar }) => {
       {isEditIconShown && (
         <img
           className="profile__picture-edit-icon"
-          src={ProfileEditIcon}
+          src={profileEditIcon}
           alt="Редактировать профиль"
         />
       )}
       <img
         className="profile__picture"
-        src={avatar || ProfilePicture}
+        src={avatar || profilePicture}
         alt="Фотография профиля"
         onMouseEnter={() => {
           setIsEditIconShown(true);

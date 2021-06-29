@@ -10,9 +10,8 @@ const Popup = ({ children, isOpen, onClose }) => {
     }
   };
 
-  const handleEscClose = (event) => event.key === "Escape" && onClose();
-
   useEffect(() => {
+    const handleEscClose = (event) => event.key === "Escape" && onClose();
     if (isOpen) {
       document.addEventListener("keydown", handleEscClose);
     } else {
