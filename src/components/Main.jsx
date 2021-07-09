@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import CurrentUserContext from "../contexts/CurrentUserContext";
 
 import { api } from "../utils/api";
 import Card from "./Card";
@@ -12,27 +13,22 @@ const Main = ({
   onPlaceDelete,
   onPlacePicture,
 }) => {
-  const [userProfile, setUserProfile] = useState({});
+  const currentUser = useContext(CurrentUserContext);
+
   const [cards, setCards] = useState([]);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const { name, about, avatar, _id } = await api.getUserProfile();
-        setUserProfile({
-          name,
-          about,
-          avatar,
-          _id,
+    if (currentUser._id) {
+      api
+        .getInitialCards()
+        .then((cards) => {
+          setCards(cards);
+        })
+        .catch((error) => {
+          console.log(error);
         });
-
-        const data = await api.getInitialCards();
-        setCards(data);
-      } catch (error) {
-        console.log(error);
-      }
-    })();
-  }, []);
+    }
+  }, [currentUser]);
 
   const handleLikeClick = async (cardId, isLikedByCurrentUser) => {
     try {
@@ -57,25 +53,22 @@ const Main = ({
       <main className="content">
         <section className="profile">
           <div className="profile__container">
-            <div
-              className="profile__picture-container"
-              onClick={() => onEditAvatar({ setUserProfile })}
-            >
-              <UserAvatar avatar={userProfile.avatar} />
+            <div className="profile__picture-container" onClick={onEditAvatar}>
+              <UserAvatar avatar={currentUser.avatar} />
             </div>
             <div className="profile__text-container">
               <div className="profile__name-container">
                 <h1 className="profile__name">
-                  {userProfile.name || "Жак-Ив Кусто"}
+                  {currentUser.name || "Жак-Ив Кусто"}
                 </h1>
                 <button
                   className="profile__edit-button"
                   type="button"
-                  onClick={() => onEditProfile({ setUserProfile })}
+                  onClick={onEditProfile}
                 />
               </div>
               <p className="profile__subtitle">
-                {userProfile.about || "Исследователь океана"}
+                {currentUser.about || "Исследователь океана"}
               </p>
             </div>
           </div>
@@ -91,16 +84,11 @@ const Main = ({
               <Card
                 {...card}
                 key={card._id}
-                isOwner={card.owner._id === userProfile._id}
-                isLikedByCurrentUser={Boolean(
-                  card.likes.find((like) => like._id === userProfile._id)
-                )}
                 onLikeClick={handleLikeClick}
                 onPictureClick={onPlacePicture}
                 onDeleteClick={(data) =>
                   onPlaceDelete({ ...data, cards, setCards })
                 }
-                likes={card.likes.length}
               />
             ))}
           </ul>

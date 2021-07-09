@@ -5,7 +5,9 @@ const PopupField = ({
   name,
   minLength = undefined,
   maxLength = undefined,
-  type = undefined
+  type = undefined,
+  value,
+  onChange,
 }) => (
   <label className="popup__field">
     <input
@@ -16,6 +18,8 @@ const PopupField = ({
       minLength={minLength}
       maxLength={maxLength}
       type={type}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
     />
     <span id={`${name}-error`} className="popup__span"></span>
   </label>

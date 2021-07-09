@@ -13,20 +13,17 @@ const PopupWithForm = ({
   onSubmit,
   closeButtonText,
   isLoading,
-  validate
+  validate,
 }) => {
   const [closeText, setCloseText] = useState(closeButtonText);
   const loadingRef = useRef();
   const formRef = useRef();
 
-  useEffect(()=>{
+  useEffect(() => {
     if (validate) {
-      new FormValidator(
-        validatorSettings,
-        formRef.current
-      ).enableValidation();
+      new FormValidator(validatorSettings, formRef.current).enableValidation();
     }
-  },[])
+  }, []);
 
   useEffect(() => {
     if (isLoading && !loadingRef.current) {
@@ -45,10 +42,6 @@ const PopupWithForm = ({
       loadingRef.current = null;
     }
   }, [isLoading]);
-
-  useEffect(()=>{
-    formRef.current.reset()
-  },[isOpen])
 
   return (
     <Popup isOpen={isOpen} onClose={onClose}>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Footer from "./Footer";
 import Header from "./Header";
 import Main from "./Main";
@@ -6,45 +6,97 @@ import PopupField from "./PopupField";
 import PopupWithForm from "./PopupWithForm";
 import ImagePopup from "./ImagePopup";
 import { api } from "../utils/api";
+import CurrentUserContext from "../contexts/CurrentUserContext";
+import ModalContext from "../contexts/ModalContext";
+import EditProfilePopup from "./EditProfilePopup";
+import EditAvatarPopup from "./EditAvatarPopup";
+import AddPlacePopup from "./AddPlacePopup";
 
 const App = () => {
-  const [editProfileModalData, setEditProfileModalData] = useState(null);
-  const [editAvatarModalData, setEditAvatarModalData] = useState(null);
-  const [addPlaceModalData, setAddPlaceModalData] = useState(null);
   const [pictureModalData, setPictureModalData] = useState(null);
   const [confirmModalData, setConfirmModalData] = useState(null);
 
+  const [currentUser, setCurrentUser] = useState({
+    _id: null,
+    name: null,
+    about: null,
+    avatar: null,
+  });
+
+  const [modalState, setModalState] = useState({});
+
+  const handleOpenModal = (modalName, data = {}) => {
+    setModalState({
+      [modalName]: data,
+    });
+  };
+
+  const handleCloseModal = (modalName) => {
+    setModalState({ [modalName]: undefined });
+  };
+
+  useEffect(() => {
+    api
+      .getUserProfile()
+      .then(({ name, about, avatar, _id }) => {
+        setCurrentUser({
+          name,
+          about,
+          avatar,
+          _id,
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+
   const handleProfileSubmit = (data) => {
-    setEditProfileModalData({ ...editProfileModalData, isLoading: true });
-    const { setUserProfile } = editProfileModalData;
+    setModalState({
+      ...modalState,
+      ["profileModal"]: {
+        isLoading: true,
+      },
+    });
+
     api
       .patchUserInformation({
         name: data["profile-name"],
         about: data["profile-about"],
       })
       .then((data) => {
-        setUserProfile(data);
-        setEditProfileModalData(null);
+        setCurrentUser(data);
+        handleCloseModal("profileModal");
       })
       .catch((error) => console.log(error));
   };
 
   const handleProfileAvatarSubmit = (data) => {
-    setEditAvatarModalData({ ...editAvatarModalData, isLoading: true });
-    const { setUserProfile } = editAvatarModalData;
+    setModalState({
+      ...modalState,
+      ["avatarModal"]: {
+        isLoading: true,
+      },
+    });
 
     api
       .patchUserAvatar(data["profile-avatar"])
       .then((data) => {
-        setUserProfile(data);
-        setEditAvatarModalData(null);
+        setCurrentUser(data);
+        handleCloseModal("avatarModal");
       })
       .catch((error) => console.log(error));
   };
 
   const handleAddPictureSubmit = (data) => {
-    setAddPlaceModalData({ ...addPlaceModalData, isLoading: true });
-    const { cards, setCards } = addPlaceModalData;
+    setModalState({
+      ...modalState,
+      ["placeModal"]: {
+        ...modalState.placeModal,
+        isLoading: true,
+      },
+    });
+    const { cards, setCards } = modalState["placeModal"];
     api
       .postNewCard({
         name: data["picture-name"],
@@ -52,7 +104,7 @@ const App = () => {
       })
       .then((data) => {
         setCards([data, ...cards]);
-        setAddPlaceModalData(null);
+        handleCloseModal("placeModal");
       })
       .catch((error) => console.log(error));
   };
@@ -70,103 +122,47 @@ const App = () => {
   };
 
   return (
-    <>
-      <Header />
-      <Main
-        onEditAvatar={setEditAvatarModalData}
-        onEditProfile={setEditProfileModalData}
-        onAddPlace={setAddPlaceModalData}
-        onPlaceDelete={setConfirmModalData}
-        onPlacePicture={setPictureModalData}
-      />
-      <Footer />
-      <PopupWithForm
-        title="Редактировать профиль"
-        name="profile-form"
-        closeButtonText="Сохранить"
-        isOpen={Boolean(editProfileModalData)}
-        isLoading={editProfileModalData?.isLoading}
-        onSubmit={handleProfileSubmit}
-        validate
-        onClose={() => {
-          setEditProfileModalData(null);
-        }}
-      >
-        <PopupField
-          name="profile-name"
-          placeholder="Имя"
-          minLength="2"
-          maxLength="40"
+    <CurrentUserContext.Provider value={currentUser}>
+      <ModalContext.Provider value={modalState}>
+        <Header />
+        <Main
+          onEditAvatar={() => handleOpenModal("avatarModal")}
+          onEditProfile={() => handleOpenModal("profileModal")}
+          onAddPlace={(data) => handleOpenModal("placeModal", data)}
+          onPlaceDelete={setConfirmModalData}
+          onPlacePicture={setPictureModalData}
         />
-        <PopupField
-          name="profile-about"
-          placeholder="Вид деятельности"
-          minLength="2"
-          maxLength="200"
+        <Footer />
+        <EditProfilePopup
+          onSubmit={handleProfileSubmit}
+          onClose={() => handleCloseModal("profileModal")}
         />
-      </PopupWithForm>
-      <PopupWithForm
-        title="Обновить аватар"
-        name="profile-avatar-form"
-        closeButtonText="Сохранить"
-        validate
-        isOpen={Boolean(editAvatarModalData)}
-        isLoading={editAvatarModalData?.isLoading}
-        onSubmit={handleProfileAvatarSubmit}
-        onClose={() => {
-          setEditAvatarModalData(null);
-        }}
-      >
-        <PopupField
-          name="profile-avatar"
-          placeholder="Ссылка"
-          type="url"
-          minLength="2"
+        <EditAvatarPopup
+          onSubmit={handleProfileAvatarSubmit}
+          onClose={() => handleCloseModal("avatarModal")}
         />
-      </PopupWithForm>
-      <PopupWithForm
-        title="Новое место"
-        name="picture-form"
-        closeButtonText="Создать"
-        validate
-        isOpen={Boolean(addPlaceModalData)}
-        isLoading={addPlaceModalData?.isLoading}
-        onSubmit={handleAddPictureSubmit}
-        onClose={() => {
-          setAddPlaceModalData(null);
-        }}
-      >
-        <PopupField
-          name="picture-name"
-          placeholder="Название"
-          minLength="2"
-          maxLength="30"
+        <AddPlacePopup
+          onSubmit={handleAddPictureSubmit}
+          onClose={() => handleCloseModal("placeModal")}
         />
-        <PopupField
-          name="picture-url"
-          placeholder="Ссылка на картинку"
-          minLength="2"
-          maxLength="200"
-          type="url"
+        <ImagePopup
+          isOpen={Boolean(pictureModalData)}
+          onClose={() => setPictureModalData(null)}
+          name={pictureModalData?.name}
+          link={pictureModalData?.link}
         />
-      </PopupWithForm>
-      <ImagePopup
-        isOpen={Boolean(pictureModalData)}
-        onClose={() => setPictureModalData(null)}
-        name={pictureModalData?.name}
-        link={pictureModalData?.link}
-      />
-      <PopupWithForm
-        title="Вы уверены?"
-        closeButtonText="Да"
-        isOpen={Boolean(confirmModalData)}
-        isLoading={confirmModalData?.isLoading}
-        onSubmit={handleConfirmModalSubmit}
-        onClose={() => {
-          setConfirmModalData(null);
-        }}
-      />
-    </>
+        <PopupWithForm
+          title="Вы уверены?"
+          closeButtonText="Да"
+          isOpen={Boolean(confirmModalData)}
+          isLoading={confirmModalData?.isLoading}
+          onSubmit={handleConfirmModalSubmit}
+          onClose={() => {
+            setConfirmModalData(null);
+          }}
+        />
+      </ModalContext.Provider>
+    </CurrentUserContext.Provider>
   );
 };
 

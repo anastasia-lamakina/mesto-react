@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useContext } from "react";
+import CurrentUserContext from "../contexts/CurrentUserContext";
 
 const LikeButton = ({ isLiked, onClick }) => (
   <button
@@ -14,38 +15,46 @@ const Card = ({
   name,
   link,
   likes,
-  isOwner,
-  isLikedByCurrentUser,
+  owner,
   _id: cardId,
   onLikeClick,
   onPictureClick,
   onDeleteClick,
-}) => (
-  <li className="destination-card">
-    {isOwner && (
-      <button
-        className="destination-card__delete-button"
-        type="button"
-        onClick={() => onDeleteClick({ cardId })}
-      />
-    )}
-    <img
-      className="destination-card__picture"
-      src={link}
-      alt={name}
-      onClick={() => onPictureClick({ link, name })}
-    />
-    <div className="destination-card__text-zone">
-      <h2 className="destination-card__text">{name}</h2>
-      <div className="destination-card__like-wrapper">
-        <LikeButton
-          isLiked={isLikedByCurrentUser}
-          onClick={() => onLikeClick(cardId, isLikedByCurrentUser)}
+}) => {
+  const currentUser = useContext(CurrentUserContext);
+  const isOwner = owner._id === currentUser._id;
+  const isLikedByCurrentUser = likes.some(
+    (like) => like._id === currentUser._id
+  );
+
+  const likesCount = likes.length;
+  return (
+    <li className="destination-card">
+      {isOwner && (
+        <button
+          className="destination-card__delete-button"
+          type="button"
+          onClick={() => onDeleteClick({ cardId })}
         />
-        <div className="destination-card__like-count">{likes}</div>
+      )}
+      <img
+        className="destination-card__picture"
+        src={link}
+        alt={name}
+        onClick={() => onPictureClick({ link, name })}
+      />
+      <div className="destination-card__text-zone">
+        <h2 className="destination-card__text">{name}</h2>
+        <div className="destination-card__like-wrapper">
+          <LikeButton
+            isLiked={isLikedByCurrentUser}
+            onClick={() => onLikeClick(cardId, isLikedByCurrentUser)}
+          />
+          <div className="destination-card__like-count">{likesCount}</div>
+        </div>
       </div>
-    </div>
-  </li>
-);
+    </li>
+  );
+};
 
 export default Card;
