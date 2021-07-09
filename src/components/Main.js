@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import CurrentUserContext from "../contexts/CurrentUserContext";
 
-import { api } from "../utils/api";
+import api from "../utils/api";
 import Card from "./Card";
 
 import UserAvatar from "./UserAvatar";

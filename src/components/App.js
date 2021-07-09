@@ -5,7 +5,7 @@ import Main from "./Main";
 import PopupField from "./PopupField";
 import PopupWithForm from "./PopupWithForm";
 import ImagePopup from "./ImagePopup";
-import { api } from "../utils/api";
+import api from "../utils/api";
 import CurrentUserContext from "../contexts/CurrentUserContext";
 import ModalContext from "../contexts/ModalContext";
 import EditProfilePopup from "./EditProfilePopup";
