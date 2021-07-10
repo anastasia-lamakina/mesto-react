@@ -1,29 +1,27 @@
 import React, { useContext, useEffect, useState } from "react";
 import CurrentUserContext from "../contexts/CurrentUserContext";
-import ModalContext from "../contexts/ModalContext";
 import PopupField from "./PopupField";
 import PopupWithForm from "./PopupWithForm";
 
-const EditProfilePopup = ({ onSubmit, onClose }) => {
+const EditProfilePopup = ({ isOpen, isLoading, onSubmit, onClose }) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const modalContext = useContext(ModalContext);
-  const currentUser = React.useContext(CurrentUserContext);
+  const currentUser = useContext(CurrentUserContext);
 
   useEffect(() => {
-    if (modalContext.profileModal) {
+    if (isOpen && !isLoading) {
       setName(currentUser.name);
       setDescription(currentUser.about);
     }
-  }, [modalContext]);
+  }, [isOpen, isLoading, currentUser]);
 
   return (
     <PopupWithForm
       title="Редактировать профиль"
       name="profile-form"
       closeButtonText="Сохранить"
-      isOpen={Boolean(modalContext.profileModal)}
-      isLoading={modalContext.profileModal?.isLoading}
+      isOpen={isOpen}
+      isLoading={isLoading}
       onSubmit={onSubmit}
       validate
       onClose={onClose}

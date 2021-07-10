@@ -1,17 +1,15 @@
-import React, { useContext, useEffect, useState } from "react";
-import ModalContext from "../contexts/ModalContext";
+import React, { useEffect, useRef } from "react";
 import PopupField from "./PopupField";
 import PopupWithForm from "./PopupWithForm";
 
-const EditAvatarPopup = ({ onSubmit, onClose }) => {
-  const [avatar, setAvatar] = useState("");
-  const modalContext = useContext(ModalContext);
+const EditAvatarPopup = ({ isOpen, isLoading, onSubmit, onClose }) => {
+  const avatarInputRef = useRef();
 
   useEffect(() => {
-    if (modalContext.avatarModal) {
-      setAvatar("");
+    if (isOpen && !isLoading) {
+      avatarInputRef.current.value = "";
     }
-  }, [modalContext]);
+  }, [isOpen, isLoading]);
 
   return (
     <PopupWithForm
@@ -19,18 +17,17 @@ const EditAvatarPopup = ({ onSubmit, onClose }) => {
       name="profile-avatar-form"
       closeButtonText="Сохранить"
       validate
-      isOpen={Boolean(modalContext.avatarModal)}
-      isLoading={modalContext.avatarModal?.isLoading}
-      onSubmit={onSubmit}
+      isOpen={Boolean(isOpen)}
+      isLoading={isLoading}
+      onSubmit={() => onSubmit(avatarInputRef?.current.value)}
       onClose={onClose}
     >
       <PopupField
+        inputRef={avatarInputRef}
         name="profile-avatar"
         placeholder="Ссылка"
         type="url"
         minLength="2"
-        value={avatar}
-        onChange={setAvatar}
       />
     </PopupWithForm>
   );

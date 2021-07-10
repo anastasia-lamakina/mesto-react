@@ -7,10 +7,12 @@ const PopupField = ({
   maxLength = undefined,
   type = undefined,
   value,
-  onChange,
+  onChange = () => {},
+  inputRef,
 }) => (
   <label className="popup__field">
     <input
+      ref={inputRef}
       className="popup__input"
       placeholder={placeholder}
       name={name}

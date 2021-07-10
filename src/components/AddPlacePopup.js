@@ -1,19 +1,17 @@
-import React, { useContext, useEffect, useState } from "react";
-import ModalContext from "../contexts/ModalContext";
+import React, { useEffect, useState } from "react";
 import PopupField from "./PopupField";
 import PopupWithForm from "./PopupWithForm";
 
-const AddPlacePopup = ({ onSubmit, onClose }) => {
+const AddPlacePopup = ({ isOpen, isLoading, onSubmit, onClose }) => {
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
-  const modalContext = useContext(ModalContext);
 
   useEffect(() => {
-    if (modalContext.placeModal && !modalContext.placeModal.isLoading) {
+    if (isOpen && !isLoading) {
       setName("");
       setUrl("");
     }
-  }, [modalContext]);
+  }, [isOpen, isLoading]);
 
   return (
     <PopupWithForm
@@ -21,8 +19,8 @@ const AddPlacePopup = ({ onSubmit, onClose }) => {
       name="profile-avatar-form"
       closeButtonText="Сохранить"
       validate
-      isOpen={Boolean(modalContext.placeModal)}
-      isLoading={modalContext.placeModal?.isLoading}
+      isOpen={isOpen}
+      isLoading={isLoading}
       onSubmit={onSubmit}
       onClose={onClose}
     >

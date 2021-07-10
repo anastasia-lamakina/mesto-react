@@ -2,17 +2,20 @@ import React, { useEffect, useState } from "react";
 import Footer from "./Footer";
 import Header from "./Header";
 import Main from "./Main";
-import PopupField from "./PopupField";
 import PopupWithForm from "./PopupWithForm";
 import ImagePopup from "./ImagePopup";
 import api from "../utils/api";
 import CurrentUserContext from "../contexts/CurrentUserContext";
-import ModalContext from "../contexts/ModalContext";
+import CardContext from "../contexts/CardContext";
 import EditProfilePopup from "./EditProfilePopup";
 import EditAvatarPopup from "./EditAvatarPopup";
 import AddPlacePopup from "./AddPlacePopup";
+import ConfirmPopup from "./ConfirmPopup";
 
 const App = () => {
+  const [editProfileModalData, setEditProfileModalData] = useState(null);
+  const [editAvatarModalData, setEditAvatarModalData] = useState(null);
+  const [addPlaceModalData, setAddPlaceModalData] = useState(null);
   const [pictureModalData, setPictureModalData] = useState(null);
   const [confirmModalData, setConfirmModalData] = useState(null);
 
@@ -23,16 +26,14 @@ const App = () => {
     avatar: null,
   });
 
-  const [modalState, setModalState] = useState({});
+  const [cards, setCards] = useState([]);
 
-  const handleOpenModal = (modalName, data = {}) => {
-    setModalState({
-      [modalName]: data,
-    });
-  };
-
-  const handleCloseModal = (modalName) => {
-    setModalState({ [modalName]: undefined });
+  const handleCloseModal = () => {
+    setEditProfileModalData(null);
+    setEditAvatarModalData(null);
+    setAddPlaceModalData(null);
+    setPictureModalData(null);
+    setConfirmModalData(null);
   };
 
   useEffect(() => {
@@ -51,12 +52,23 @@ const App = () => {
       });
   }, []);
 
+  useEffect(() => {
+    if (currentUser._id) {
+      api
+        .getInitialCards()
+        .then((cards) => {
+          setCards(cards);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+  }, [currentUser]);
+
   const handleProfileSubmit = (data) => {
-    setModalState({
-      ...modalState,
-      ["profileModal"]: {
-        isLoading: true,
-      },
+    setEditProfileModalData({
+      ...editProfileModalData,
+      isLoading: true,
     });
 
     api
@@ -66,37 +78,38 @@ const App = () => {
       })
       .then((data) => {
         setCurrentUser(data);
-        handleCloseModal("profileModal");
+        handleCloseModal();
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        console.log(error);
+        handleCloseModal();
+      });
   };
 
   const handleProfileAvatarSubmit = (data) => {
-    setModalState({
-      ...modalState,
-      ["avatarModal"]: {
-        isLoading: true,
-      },
+    setEditAvatarModalData({
+      ...editAvatarModalData,
+      isLoading: true,
     });
 
     api
-      .patchUserAvatar(data["profile-avatar"])
+      .patchUserAvatar(data)
       .then((data) => {
         setCurrentUser(data);
-        handleCloseModal("avatarModal");
+        handleCloseModal();
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        console.log(error);
+        handleCloseModal();
+      });
   };
 
   const handleAddPictureSubmit = (data) => {
-    setModalState({
-      ...modalState,
-      ["placeModal"]: {
-        ...modalState.placeModal,
-        isLoading: true,
-      },
+    setAddPlaceModalData({
+      ...addPlaceModalData,
+      isLoading: true,
     });
-    const { cards, setCards } = modalState["placeModal"];
+
     api
       .postNewCard({
         name: data["picture-name"],
@@ -104,9 +117,12 @@ const App = () => {
       })
       .then((data) => {
         setCards([data, ...cards]);
-        handleCloseModal("placeModal");
+        handleCloseModal();
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        console.log(error);
+        handleCloseModal();
+      });
   };
 
   const handleConfirmModalSubmit = () => {
@@ -114,54 +130,77 @@ const App = () => {
     api
       .deleteCard(confirmModalData.cardId)
       .then(() => {
-        const { setCards, cards } = confirmModalData;
         setCards(cards.filter((card) => card._id !== confirmModalData.cardId));
-        setConfirmModalData(null);
+        handleCloseModal();
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        console.log(error);
+        handleCloseModal();
+      });
+  };
+
+  const handleLikeClick = async (cardId, isLikedByCurrentUser) => {
+    try {
+      let data;
+      if (isLikedByCurrentUser) {
+        data = await api.deleteLikeClick(cardId);
+      } else {
+        data = await api.putLikeClick(cardId);
+      }
+
+      const indexOfCard = cards.findIndex(({ _id: id }) => id === cardId);
+      const copyOfCards = [...cards];
+      copyOfCards[indexOfCard] = data;
+      setCards(copyOfCards);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
     <CurrentUserContext.Provider value={currentUser}>
-      <ModalContext.Provider value={modalState}>
+      <CardContext.Provider value={cards}>
         <Header />
         <Main
-          onEditAvatar={() => handleOpenModal("avatarModal")}
-          onEditProfile={() => handleOpenModal("profileModal")}
-          onAddPlace={(data) => handleOpenModal("placeModal", data)}
+          onEditAvatar={setEditAvatarModalData}
+          onEditProfile={setEditProfileModalData}
+          onAddPlace={setAddPlaceModalData}
           onPlaceDelete={setConfirmModalData}
           onPlacePicture={setPictureModalData}
+          onLikeClick={handleLikeClick}
         />
         <Footer />
         <EditProfilePopup
+          isOpen={Boolean(editProfileModalData)}
+          isLoading={editProfileModalData?.isLoading}
           onSubmit={handleProfileSubmit}
-          onClose={() => handleCloseModal("profileModal")}
+          onClose={handleCloseModal}
         />
         <EditAvatarPopup
+          isOpen={Boolean(editAvatarModalData)}
+          isLoading={editAvatarModalData?.isLoading}
           onSubmit={handleProfileAvatarSubmit}
-          onClose={() => handleCloseModal("avatarModal")}
+          onClose={handleCloseModal}
         />
         <AddPlacePopup
+          isOpen={Boolean(addPlaceModalData)}
+          isLoading={addPlaceModalData?.isLoading}
           onSubmit={handleAddPictureSubmit}
-          onClose={() => handleCloseModal("placeModal")}
+          onClose={handleCloseModal}
         />
-        <ImagePopup
-          isOpen={Boolean(pictureModalData)}
-          onClose={() => setPictureModalData(null)}
-          name={pictureModalData?.name}
-          link={pictureModalData?.link}
-        />
-        <PopupWithForm
-          title="Вы уверены?"
-          closeButtonText="Да"
+        <ConfirmPopup
           isOpen={Boolean(confirmModalData)}
           isLoading={confirmModalData?.isLoading}
           onSubmit={handleConfirmModalSubmit}
-          onClose={() => {
-            setConfirmModalData(null);
-          }}
+          onClose={handleCloseModal}
         />
-      </ModalContext.Provider>
+        <ImagePopup
+          isOpen={Boolean(pictureModalData)}
+          onClose={handleCloseModal}
+          name={pictureModalData?.name}
+          link={pictureModalData?.link}
+        />
+      </CardContext.Provider>
     </CurrentUserContext.Provider>
   );
 };
