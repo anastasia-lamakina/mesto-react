@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import Footer from "./Footer";
 import Header from "./Header";
 import Main from "./Main";
-import PopupWithForm from "./PopupWithForm";
 import ImagePopup from "./ImagePopup";
 import api from "../utils/api";
 import CurrentUserContext from "../contexts/CurrentUserContext";
@@ -72,17 +71,13 @@ const App = () => {
     });
 
     api
-      .patchUserInformation({
-        name: data["profile-name"],
-        about: data["profile-about"],
-      })
+      .patchUserInformation(data)
       .then((data) => {
         setCurrentUser(data);
         handleCloseModal();
       })
       .catch((error) => {
         console.log(error);
-        handleCloseModal();
       });
   };
 
@@ -100,7 +95,6 @@ const App = () => {
       })
       .catch((error) => {
         console.log(error);
-        handleCloseModal();
       });
   };
 
@@ -111,17 +105,13 @@ const App = () => {
     });
 
     api
-      .postNewCard({
-        name: data["picture-name"],
-        link: data["picture-url"],
-      })
+      .postNewCard(data)
       .then((data) => {
         setCards([data, ...cards]);
         handleCloseModal();
       })
       .catch((error) => {
         console.log(error);
-        handleCloseModal();
       });
   };
 
@@ -135,7 +125,6 @@ const App = () => {
       })
       .catch((error) => {
         console.log(error);
-        handleCloseModal();
       });
   };
 

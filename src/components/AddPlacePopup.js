@@ -4,12 +4,12 @@ import PopupWithForm from "./PopupWithForm";
 
 const AddPlacePopup = ({ isOpen, isLoading, onSubmit, onClose }) => {
   const [name, setName] = useState("");
-  const [url, setUrl] = useState("");
+  const [link, setLink] = useState("");
 
   useEffect(() => {
     if (isOpen && !isLoading) {
       setName("");
-      setUrl("");
+      setLink("");
     }
   }, [isOpen, isLoading]);
 
@@ -21,7 +21,7 @@ const AddPlacePopup = ({ isOpen, isLoading, onSubmit, onClose }) => {
       validate
       isOpen={isOpen}
       isLoading={isLoading}
-      onSubmit={onSubmit}
+      onSubmit={() => onSubmit({ name, link })}
       onClose={onClose}
     >
       <PopupField
@@ -38,8 +38,8 @@ const AddPlacePopup = ({ isOpen, isLoading, onSubmit, onClose }) => {
         minLength="2"
         maxLength="200"
         type="url"
-        value={url}
-        onChange={setUrl}
+        value={link}
+        onChange={setLink}
       />
     </PopupWithForm>
   );

@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { getInputValuesFromEvent } from "../utils/utils";
 import { FormValidator } from "../utils/FormValidator";
 import Popup from "./Popup";
 import { validatorSettings } from "../utils/constants";
@@ -52,7 +51,7 @@ const PopupWithForm = ({
         noValidate
         onSubmit={(event) => {
           event.preventDefault();
-          onSubmit(getInputValuesFromEvent(event));
+          onSubmit();
         }}
       >
         <button className="popup__close" type="button" />

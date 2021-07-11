@@ -5,13 +5,13 @@ import PopupWithForm from "./PopupWithForm";
 
 const EditProfilePopup = ({ isOpen, isLoading, onSubmit, onClose }) => {
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  const [about, setAbout] = useState("");
   const currentUser = useContext(CurrentUserContext);
 
   useEffect(() => {
     if (isOpen && !isLoading) {
       setName(currentUser.name);
-      setDescription(currentUser.about);
+      setAbout(currentUser.about);
     }
   }, [isOpen, isLoading, currentUser]);
 
@@ -22,7 +22,7 @@ const EditProfilePopup = ({ isOpen, isLoading, onSubmit, onClose }) => {
       closeButtonText="Сохранить"
       isOpen={isOpen}
       isLoading={isLoading}
-      onSubmit={onSubmit}
+      onSubmit={() => onSubmit({ name, about })}
       validate
       onClose={onClose}
     >
@@ -39,8 +39,8 @@ const EditProfilePopup = ({ isOpen, isLoading, onSubmit, onClose }) => {
         placeholder="Вид деятельности"
         minLength="2"
         maxLength="200"
-        value={description}
-        onChange={setDescription}
+        value={about}
+        onChange={setAbout}
       />
     </PopupWithForm>
   );
